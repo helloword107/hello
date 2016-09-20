@@ -1,0 +1,5 @@
+var inputVal = $(this).parents(".modal-content").find("input");
+for(var i = 0; i<inputVal.length; i++){
+  //console.log(inputVal[i].val());//使用这种写法是错误的
+  console.log($(inputVal[i]).val())//正确的写法
+}
