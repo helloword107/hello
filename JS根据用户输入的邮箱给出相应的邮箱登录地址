@@ -1,0 +1,30 @@
+实现思路：
+　　　　 1、提取邮箱
+
+　　　　 2、对提取出来的邮箱进行切割，用到JS的 “split”方法
+
+　　　　 3、对切割后的值进行判断
+<button type="button" id="btn">获取邮箱链接</button>
+<input type="text" name="" id="Email" value="">
+<a href="" title="" id="link">登录邮箱</a>
+var Btn = document.getElementById('btn');
+Btn.onclick = function (){
+    goEail('Email', 'link');
+}
+
+function goEail(obj, ln){
+   var Email = document.getElementById(obj).value;
+   var Link = document.getElementById(ln);
+   //console.log(Email.split("@")[1]);
+   var MailLink = Email.split("@")[1];
+        MailLink = MailLink.toLowerCase();
+   if(MailLink == "163.com"){
+       Link.href = "http://www.163.com";
+   }else if(MailLink == "126.com"){
+       Link.href = "http://www.126.com";
+   }else if(MailLink == "qq.com"){
+       Link.href = "http://www.qq.com";
+   }else{
+       alert("请输入正确的邮箱地址");
+   }
+}
