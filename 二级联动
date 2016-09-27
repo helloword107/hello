@@ -1,0 +1,54 @@
+<html lang="en">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="Generator" content="EditPlus®">
+  <meta name="Author" content="">
+  <meta name="Keywords" content="">
+  <meta name="Description" content="">
+  <title>二级联动demo</title>
+  <script src="https://cdn.bootcss.com/jquery/3.1.1/jquery.js"></script>
+  <style type="text/css">
+	*{margin: 0;padding: 0; list-style: none;}
+	.mainBox{width:410px;height:30px;margin:100px auto; border:1px solid #ddd; border-radius:3px;}
+	.mainBox select{width:200px;height:30px;}
+  </style>
+ </head>
+ <body>
+	<div class="mainBox">
+		<select id="s1">
+			<option value="0">请选择</option>
+			<option value="1">标题一</option>
+			<option value="2">标题二</option>
+			<option value="3">标题三</option>
+			<option value="4">标题四</option>
+		</select>
+		<select id="s2" style="display:none;"></select>
+	</div>
+	<!--js-->
+	<script type="text/javascript">
+		$("#s1").click(function(){
+			var $this = $(this);
+			$("#s2").html("");
+			if($this.val() == 1){
+				$("#s2").show();
+				$("#s2").append(
+					"<option value='1'>内容一</option>"+
+					"<option value='2'>内容二</option>"+
+					"<option value='3'>内容三</option>"+
+					"<option value='4'>内容四</option>"
+				);
+			}else if($this.val() == 2){
+				$("#s2").show();
+				$("#s2").append(
+					"<option value='1'>内容2一</option>"+
+					"<option value='2'>内容2二</option>"+
+					"<option value='3'>内容2三</option>"+
+					"<option value='4'>内容2四</option>"
+				);
+			}else{
+			
+			}
+		});
+	</script>
+ </body>
+</html>
