@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="Generator" content="EditPlus®">
+  <meta name="Author" content="">
+  <meta name="Keywords" content="">
+  <meta name="Description" content="">
+  <title>二级联动demo</title>
+  <script src="https://cdn.bootcss.com/jquery/3.1.1/jquery.js"></script>
+  <style type="text/css">
+	*{margin: 0;padding: 0; list-style: none;font-style:normal;}
+	.min{width:410px;margin:100px auto;}
+	 .mainBox{width:410px;height:300px; border:1px solid #ddd; border-radius:3px; margin-top:15px;}
+	.mainBox select{width:200px;height:30px;} 
+	.inputBox{width:410px;min-height:34px;border:1px solid #ddd; border-radius:3px;}
+	.inputBox .BtnBox{background:#b1b1b1;}
+	.btnBox, .BtnBox{display:inline-block;padding:5px 5px;font-size:12px;margin:5px 5px; background:#ff33ff; cursor:pointer; color:#fff;border-radius:3px;}
+  </style>
+ </head>
+ <body>
+	<div class="min">
+		<div class="inputBox"></div>
+		<div class="mainBox">
+			<div class="btnBox">中国联通</div>
+			<div class="btnBox">中国移动</div>
+			<div class="btnBox">新大王</div>
+			<div class="btnBox">雅培</div>
+			<div class="btnBox">妈咪宝贝</div>
+			<div class="btnBox">好孩子</div>
+			<div class="btnBox">天堂伞</div>
+			<div class="btnBox">狮王</div>
+			<div class="btnBox">惠氏</div>
+			<div class="btnBox">美赞臣</div>	
+		</div>
+	</div>
+	<!--js-->
+	<script type="text/javascript">
+		$('#s2').select2();
+		$(".btnBox").on("click",function(){
+			var ThisTxt = $(this).text();
+			var ThisIndex = $(this).index();
+			console.log(ThisIndex);
+			var $ThisDom = "<div class='BtnBox' onclick='remove($(this))'><em>"+ThisTxt+"</em><input type='hidden' value="+ThisIndex +" /></div>";
+			$(".inputBox").append($ThisDom);
+			$(this).hide(); 
+		});
+		function remove(obj){
+			$(obj).remove();
+			var	ThisVal = $(obj).find("input").val();
+			$(".btnBox").each(function(){
+				if($(this).index() == ThisVal){
+					$(this).show();
+				}
+			});
+		}
+	</script>
+ </body>
+</html>
