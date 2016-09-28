@@ -99,7 +99,7 @@
 			if(Sval == "default"){
 				alert("输入不正确");
 			}else{
-				let iscz=false;
+				var iscz=false;
 				for(var i=0;i<BtnBoxVal.length;i++){
 					if($(BtnBoxVal[i]).val() == Sval){
 						iscz=true;
