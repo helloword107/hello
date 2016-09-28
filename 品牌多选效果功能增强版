@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="Generator" content="EditPlus®">
+  <meta name="Author" content="">
+  <meta name="Keywords" content="">
+  <meta name="Description" content="">
+  <title>二级联动demo</title>
+  <script src="https://cdn.bootcss.com/jquery/3.1.1/jquery.js"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/css/select2.min.css" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/js/select2.min.js"></script>
+  <style type="text/css">
+	*{margin: 0;padding: 0; list-style: none;font-style:normal;text-decoration:none;}
+	.min{width:410px;margin:100px auto;}
+	 .mainBox{width:410px;height:300px; border:1px solid #ddd; border-radius:3px; margin-top:15px;}
+	.mainBox select{width:180px;height:30px;} 
+	.inputBox{width:410px;min-height:34px;border:1px solid #ddd; border-radius:3px;}
+	.inputBox .BtnBox{background:#b1b1b1;}
+	.btnBox, .BtnBox{display:inline-block;padding:5px 5px;font-size:12px;margin:5px 5px; background:#ff33ff; cursor:pointer; color:#fff;border-radius:3px;}
+	.btn{display:inline-block;padding:5px 10px; background:#fff; color:#333;border:1px solid #ddd;margin-top:5px; border-radius:5px;}
+	.SelectBox{width:410px;margin-top:5px;}
+	.SelectBox select{width:300px;height:34px;}
+	.btn.btn-succeess{background:#0099ff;color:#fff;border-color:#0099ff;}
+	.btn.btn-remove{background:#ff3333;color:#fff;border-color:#ff3333;}
+  </style>
+ </head>
+ <body>
+	<div class="min">
+		<div class="inputBox"></div>
+		<a href="javascript:;" class="btn btn-click">快速搜索品牌</a>
+		<div class="SelectBox" style="display:none;">
+			<select id="s2" style="width:180px;">
+				<option value="default" selected="selected">请输入搜索内容</option>
+			</select>
+			<a href="javascript:;" class="btn btn-succeess">确定</a>
+			<a href="javascript:;" class="btn btn-remove">取消</a>
+		</div>
+		<div class="mainBox">
+			<div class="btnBox">中国联通</div>
+			<div class="btnBox">中国移动</div>
+			<div class="btnBox">新大王</div>
+			<div class="btnBox">雅培</div>
+			<div class="btnBox">妈咪宝贝</div>
+			<div class="btnBox">好孩子</div>
+			<div class="btnBox">天堂伞</div>
+			<div class="btnBox">狮王</div>
+			<div class="btnBox">惠氏</div>
+			<div class="btnBox">美赞臣</div>	
+		</div>
+	</div>
+	<!--js-->
+	<script type="text/javascript">
+		//bootstrap提供的下拉框组件
+		$('#s2').select2();
+		//将全部品牌添加到下拉菜单中
+		$(document).ready(function(){
+			$(".btnBox").each(function(){
+				$("#s2").append('<option value="'+$(this).index()+'">'+$(this).text()+'</option>');
+			});
+		});
+		//点击的时添加元素
+		$(".btnBox").on("click",function(){
+			var ThisTxt = $(this).text();
+			var ThisIndex = $(this).index();
+			var $ThisDom = "<div class='BtnBox' onclick='remove($(this))'><em>"+ThisTxt+"</em><input type='hidden' value="+ThisIndex +" /></div>";
+			$(".inputBox").append($ThisDom);
+			$(this).hide(); 
+		});
+		//动态元素事件委派
+		function remove(obj){
+			$(obj).remove();
+			var	ThisVal = $(obj).find("input").val();
+			$(".btnBox").each(function(){
+				if($(this).index() == ThisVal){
+					$(this).show();
+				}
+			});
+		}
+		//点击快速搜索品牌搜索框出现
+		$(".btn-click").click(function(){
+			$(this).hide();
+			$(".SelectBox").show();
+		});
+		//取消搜索
+		$(".btn-remove").click(function(){
+			$(".SelectBox").hide();
+			$(".btn-click").show();
+			$('#s2').val("default");
+			$("#select2-s2-container").text("请输入搜索内容");
+		});
+		//点击确定按钮将搜索到的内容添加到品牌
+		$(".btn-succeess").click(function(){
+			var Sval = $('#s2').val();
+			var Stxt = $('#s2 option:selected').text();
+			var AddDom = "<div class='BtnBox' onclick='remove($(this))'><em>"+Stxt+"</em><input type='hidden' value="+Sval+" /></div>";
+			var BtnBoxVal = $(".inputBox").find(".BtnBox input");
+			//console.log(BtnBoxVal);
+			if(Sval == "default"){
+				alert("输入不正确");
+			}else{
+				let iscz=false;
+				for(var i=0;i<BtnBoxVal.length;i++){
+					if($(BtnBoxVal[i]).val() == Sval){
+						iscz=true;
+						break;
+					}
+				}
+				if(iscz){
+					alert("该品牌已经添加");
+				}else{
+					$(".inputBox").append(AddDom);
+				}
+			}
+			
+			//不能反复的去添加元素
+			//全部品牌中对应的元素隐藏
+			$(".btnBox").each(function(){
+				if($(this).index() == Sval){
+					$(this).hide();
+				}
+			});
+		});
+	</script>
+ </body>
+</html>
