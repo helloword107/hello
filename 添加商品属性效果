@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="Generator" content="EditPlus®">
+  <meta name="Author" content="">
+  <meta name="Keywords" content="">
+  <meta name="Description" content="">
+  <title>Document</title>
+  <script type="text/javascript" src="http://apps.bdimg.com/libs/jquery/2.1.1/jquery.min.js"></script>
+  <style type="text/css">
+	*{margin: 0;padding: 0;list-style: none;text-decoration:none;font-style:normal;}
+	.clearfix{*zoom:1;}
+	.clearfix:before, .clearfix:after{display:table;line-height:0;content:"";}
+	.clearfix:after{clear:both;}
+	.main{width:720px;border:1px solid #ddd;margin:100px auto;}
+	.title, .addBox, .inpBox{width:700px;border-bottom:1px solid #ddd;margin-top:10px;line-height:34px;padding:10px 10px;}
+	.fl{float:left;}
+	.tc{text-align:center;}
+	.width-100{width: 100px;}
+	.width-150{width: 150px;}
+	.width-200{width: 200px;}
+	.m-r-10{margin-right: 10px;}
+	.form-control{border:1px solid #ddd; border-radius:3px; line-height:34px;background:#fff;}
+	.switch{width: 100px;height:34px;border:1px solid #ddd;border-radius:5px;overflow:hidden;position:relative;cursor:pointer;}
+	.NoorOff{width: 150px;height:34px;position:absolute;transition:all 0.5s;top:0;left:0;}
+	.NoorOff div{width: 50px;height: 34px;text-align:center;line-height:34px;}
+	.No{background:#0099ff;color:#fff;}
+	.Btn{background:#fff;color:#333;}
+	.Off{background:#ff3300;color:#fff;}
+	.success{width: 50px;height:34px;background:#00ffcc;border:1px solid #00ffcc; color:#fff;border-radius:5px;cursor:pointer;}
+	.remove{display:inline-block;padding:5px 8px; color:#fff; background:#cc3300; border-radius:5px;font-size:12px;}
+	.test{background:#ccccff;padding:3px 5px;border-radius:5px;color:#fff;font-size:12px;}
+	.ADDBox{margin-top:10px;}
+	.valText{display:inline-block;background:#ff66cc;color:#fff;font-size:10px;padding:3px 3px;border-radius:3px;margin:5px; line-height:12px; cursor:pointer;}
+  </style>
+ </head>
+ <body>
+	<div class="main clearfix">
+		<div class="title clearfix">
+			<div class="width-100 m-r-10 fl tc">排序</div>
+			<div class="width-100 m-r-10 fl tc">属性名称</div>
+			<div class="width-200 m-r-10 fl">属性值</div>
+			<div class="width-200 fl">是否显示</div>
+		</div>
+		<div class="addBox clearfix"></div>
+		<div class="inpBox clearfix">
+			<div class="width-100 m-r-10 fl">
+				<input type="text" class="form-control width-100" id="sort" />
+			</div>
+			<div class="width-100 m-r-10 fl">
+				<input type="text" class="form-control width-100" id="Name" />
+			</div>
+			<div class="width-200 m-r-10 fl form-control">
+				<ul class="ItemBox">
+					<li class="AddItem"><input type="text" class="form-control width-100" id="for-input" onkeyup="this.value=this.value.replace(/^ +| +$/g,'')"  /><li>
+				</ul>
+			</div>
+			<div class="width-200 fl">
+				<div class="switch fl m-r-10">
+					<div class="NoorOff">
+						<div class="No fl">开启</div>
+						<div class="Btn fl"></div>
+						<div class="Off fl">关闭</div>
+						<input type="hidden" id="switchInp" value="1" />
+					</div>
+				</div>
+				<button type="button" class="success fl">确定</button>
+			</div>
+		</div>
+	</div>
+
+	<!--js-->
+	<script type="text/javascript">
+		$(document).ready(function(){
+			//开关按钮动画
+			$(".switch").click(function(){
+				var InputVal = $("#switchInp").val();
+				if(InputVal == 0){
+					$(".NoorOff").css("left","0px");
+					$("#switchInp").val(1);
+				}else{
+					$(".NoorOff").css("left","-50px");
+					$("#switchInp").val(0);
+				}
+			});
+			//鼠标失去焦点或者是按下空格和回车后添加内容
+			$("#for-input").blur(function(){
+				var AddDom = $(this).val();
+				if(AddDom != ""){
+					$(".AddItem").before("<li class='valText' onclick='remove(this)'>"+AddDom+"</li>");
+					$(this).val("");
+				}
+			});
+			$("#for-input").keydown(function(event){
+				var keyCode=event.keyCode;
+				var AddDom = $(this).val();
+				if(AddDom != ""){
+					if(keyCode == 32 || keyCode == 13){
+						$(".AddItem").before("<li class='valText' onclick='remove(this)'>"+AddDom+"</li>");
+						$(this).val("");
+					}
+				}
+			});
+			//点击确定之后将数据读取然后添加
+			$(".success").click(function(){
+				var array = [];
+				var array2 = [];
+				var sort = $("#sort").val();
+				var Name = $("#Name").val();
+				if(sort != "" && Name != ""){
+					var InputVal = $("#switchInp").val();
+					var showText
+					var ItemBox = $(".ItemBox").find(".valText");
+					array.push(sort);
+					array.push(Name);
+					//使用for循环找出所有的属性值并且添加进数组
+					for(var i=0;i<ItemBox.length;i++){
+						array2.push($(ItemBox[i]).text());
+					}
+					console.log(array2);
+					if(InputVal == 1){
+						showText = "显示";
+					}else{
+						showText = "隐藏";
+					}
+					var Dom = "<div class='ADDBox clearfix'>"+
+								  "<div class='width-100 m-r-10 fl tc'>"+array[0]+"</div>" +
+								  "<div class='width-100 m-r-10 fl tc'>"+array[1]+"</div>" +
+								  "<div class='width-200 m-r-10 fl'>"+array2+"</div>" +
+								  "<div class='width-200 fl'>"+showText+"</div>"+
+								  "<a href='#' class='remove fl' onclick='removeThis(this)'>删除</a>" +
+							  "</div>";
+					$(".addBox").append(Dom);
+				}else{
+					alert("请填写相关字段");
+				}
+			});
+		});
+		//事件委派
+		function removeThis(obj){
+			$(obj).parents(".ADDBox").remove();
+		}
+		function remove(obj){
+			$(obj).remove();
+		}
+	</script>
+ </body>
+</html>
