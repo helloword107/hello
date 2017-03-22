@@ -1,0 +1,63 @@
+前因： 某次，技术群里有人问，点击一个按钮显示当前时间，每隔5分钟获取一次点击这个按钮的时间点。
+好一会我才明白过来，他想要的是点击的时候获取一次点击的时间点，当再次点击的时候去判断一下，
+距离上次点击时间的时差是否满足五分钟，满足就把当前的点击时间获取到。
+
+思路: 1、初始化一个时间作为上次一的点击时间
+      2、获取当前的点击时间点
+      3、当前时间减去上一次点击的时间，算出时间差
+      
+      
+      
+代码：
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+	<script type="text/javascript" src="../js/jquery.min.js"></script>
+</head>
+<body>
+	<button type="button" id="getTime">click me</button>
+	<p>上一次点击的时间：<em id="prevText"></em></p>
+	<p>当前点击的时间：<em id="nowText"></em></p>
+	<p>两次点击的时间差：<em id="difference"></em></p>
+	<script type="text/javascript">
+		var prevTime = new Date();//上一次点击的时间,
+		$("#getTime").on('click',function(){
+			var now = new Date();
+			var s1 = prevTime.getTime(),
+				s2 = now.getTime();
+			var total = (s2 - s1)/1000;
+
+			var day = parseInt(total / (24*60*60));//计算整天天数
+			var afterDay = total - day*24*60*60; // 取出算出天数后剩余的秒数
+
+			var hour = parseInt(afterDay/(60*90)); //计算整数小时数
+			var afterHour = total - day*24*60*60 - hour*60*60; // 取出算出小时数后剩余的秒数
+
+			var min = parseInt(afterHour/60); // 计算整数分
+			var afterMin = total - day*24*60*60 - hour*60*60 - min*60; // 取出算出分数后剩余的秒数
+
+			var second = parseInt(afterMin);// 获取秒数
+
+			if(now != prevTime){
+				//上一次点击的时间
+				$("#prevText").text(prevTime);
+			}
+			prevTime = now; //重新刷新上一次的点击时间
+			$("#nowText").text(now);
+			$("#difference").text(day+"天"+hour+"时"+min+"分"+second);
+			console.log(min);
+
+			if(min > 5){
+				// your code
+				console.log("符合要求标准，开始执行...");
+			}else{
+				console.log("不符合要求，跳过，重新刷新时间开始计时..");
+			}
+		});
+	</script>
+</body>
+</html>
