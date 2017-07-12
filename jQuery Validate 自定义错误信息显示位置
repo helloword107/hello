@@ -1,0 +1,22 @@
+return $("#"+id).validate({
+  ignore: "",
+  rules:{
+    files:{
+      required: true
+    },
+    selPos:{
+      required: true
+    }
+  },
+  messages:{
+    files:{
+      required: "请上传图片"
+    },
+    selPos:{
+      required: "请选择上传位置"
+    }
+  },
+  errorPlacement: function(error, element) { //错误信息位置设置方法
+    error.appendTo(element.parents('.col-md-6').after()); //这里的element是录入数据的对象
+  }
+}); 
