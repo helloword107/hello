@@ -1,0 +1,52 @@
+<!--
+  效果依赖JQ
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>打字效果</title>
+	<script type="text/javascript" src="jquery.js"></script>
+	<style type="text/css">
+		*{margin: 0;padding: 0;}
+		.textBox{width: 400px;height: 400px;margin: 20px auto;padding: 15px 15px;background:#17779c;color: #fff;}
+		.textBox h1{font-size: 18px;text-align: center;}
+		.textBox p{text-indent: 2em;}
+	</style>
+</head>
+<body>
+	<div class="textBox" id="autotype">
+		<h1>生活的坑都是自己挖的</h1>
+		<br>
+		<p>这个世界有侥幸但不宽恕侥幸，不要把自己一步一步拖到付出代价的境地。</p>
+		<br>
+		<p>生活中的一切罪与非罪，罚与非罚，良心会有知、光阴会有知、天地会有知。</p>
+		<br>
+		<p>不去欺负生活生活自会安妥的待你，清白干净的灵魂，特征只有一个，无愧过往，不畏将来。</p>
+	</div>
+	<script type="text/javascript">
+    (function($){
+      $.fn.autotype = function() {
+          var $text = $(this);
+          //console.log('this', this);
+          var str = $text.html(); 
+          var index = 0;
+          var x = $text.html('');
+          var timer = setInterval(function() {
+              var current = str.substr(index, 1);
+              if (current == '<') {
+                  index = str.indexOf('>', index) + 1;
+              } else {
+                  index++;
+              }
+              $text.html(str.substring(0, index) + (index & 1 ? '_': ''));
+              if (index >= str.length) {
+                  clearInterval(timer);
+              }
+          },100);
+      };
+    })(jQuery)
+		$("#autotype").autotype();
+	</script>
+</body>
+</html>
