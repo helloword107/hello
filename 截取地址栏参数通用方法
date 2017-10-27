@@ -1,0 +1,7 @@
+var nameId = getQueryString('id'); // 这个getQueryString('id') 这个ID参数穿的就是A页面链接?后面的id名字
+function getQueryString (nameId) {
+    var reg = new RegExp("(^|&)" + nameId + "=([^&]*)(&|$)", "i");
+    var r = decodeURI(window.location.search).substr(1).match(reg);
+    if (r != null) return unescape(r[2]); return null;
+} 
+console.log(nameId);
