@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>将canvas转成图片</title>
+</head>
+<body>
+	<canvas id="myCanvas" width="250" height="250">您的浏览器不支持canvas</canvas>
+	<img id="canvasImg" src="" alt="">
+	<button type="button" id="btn">生成图片</button>
+	<script type="text/javascript">
+	window.onload = function(){
+		var canvasImg = document.getElementById("canvasImg"),
+			oBtn = document.getElementById("btn"),
+			canvas = document.getElementById("myCanvas"), // 获取canvas元素
+			context = canvas.getContext("2d"),            // 指定2D画布环境
+			centerX = canvas.width/2,                     // canvas中心点X坐标轴
+			centerY = canvas.height/2,                    // canvas 中心点Y轴坐标
+			rad = Math.PI*2/100,                          // 将360度分成100份
+			speed = 0.1;                                  // 速度控制变量
+
+		// 绘制白色内圈
+		function whiteCircle(n){
+			context.save();               // 入栈
+			context.strokeStyle = "#fff"; // 描边颜色
+			context.lineWidth = 5;        // 设置线宽
+			context.beginPath();          // 路径开始
+			context.arc(centerX, centerY, 100, -Math.PI/2, -Math.PI/2 +n*rad, false);
+			// context.arc(x坐标，y坐标，半径，起始角度，终止角度，顺时针/逆时针)
+			context.stroke();             // 绘制
+			context.closePath();          // 路径结束
+			context.restore();            // 出栈
+		}
+		// 绘制蓝色外圈
+		function blueCircle(){
+			context.save();                  // 入栈
+			context.beginPath();             // 路径开始
+			context.strokeStyle = "#169FE6"; // 设置颜色
+			context.lineWidth = 10;          // 设置线宽
+			context.arc(centerX, centerY, 100, 0, Math.PI*2, false);
+			context.stroke();                // 绘制
+			context.closePath();             // 路径结束
+			context.restore();               // 出栈
+		}
+
+		// 生成百分比的文字
+		function text(n){
+			context.save();  // 入栈
+			context.strokeStyle = "#169FE6"; // 设置描边样式
+			context.font = "40px Arial"; // 设置字体大小
+			context.strokeText(n.toFixed(0)+"%", centerX-25, centerY+15);
+			context.stroke();
+			context.restore();
+		}
+
+		(function drawFrame(){
+			window.requestAnimationFrame(drawFrame, canvas);
+			context.clearRect(0, 0, canvas.width, canvas.height);
+			blueCircle();
+			text(speed)
+			whiteCircle(speed);
+			if(speed > 100) return;
+			speed += 0.1;
+		}());
+
+		oBtn.onclick = function (){
+			canvasImg.src = canvas.toDataURL("image/png");
+		};
+	};
+
+	</script>
+</body>
+</html>
