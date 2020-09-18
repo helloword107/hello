@@ -1,0 +1,5 @@
+function toThousands(num){
+    return (num || 0).toString().replace(/(\d)(?=(?:\d{3})+$)/g, '$1,');
+}
+toThousands(1256004238000)
+"1,256,004,238,000"
