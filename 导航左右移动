@@ -1,0 +1,64 @@
+<div class="nav">
+    <ul>
+        <li class="nav-this"><a href="javascript:;">合同概况</a></li>
+        <li><a href="javascript:;">计划分解</a></li>
+        <li><a href="javascript:;">标的交付</a></li>
+        <li><a href="javascript:;">资金结算</a></li>
+        <li><a href="javascript:;">合同核销</a></li>
+        <li><a href="javascript:;">合同变更</a></li>
+        <li><a href="javascript:;">合同争议</a></li>
+        <li><a href="javascript:;">合同发票</a></li>
+        <li><a href="javascript:;">合同保证金</a></li>
+        <li><a href="javascript:;">合同文件</a></li>
+        <li><a href="javascript:;">审批记录</a></li>
+        <li><a href="javascript:;">关联合同</a></li>
+    </ul>
+</div>
+<div class="offsetBar">
+    <i class="layui-icon layui-icon-prev move-l"></i>
+    <i class="layui-icon layui-icon-next move-r"></i>
+</div>
+<script type="text/javascript">
+  // 小屏幕导航点击移动
+  var handleNum = 0; // 点击次数
+  var navItemW = [];
+  var elChildren = $(".nav ul").children("li");
+  for (var i = 0, ilen = elChildren.length; i < ilen; i++) {
+      navItemW.push($(".nav ul").children("li")[i].offsetWidth) // 10是当前span的margin
+  }
+  function animateTabs(type, $el) {
+      var elWidth = $el[0].clientWidth // 内部菜单的宽度
+      var wrapWidth = $('.nav')[0].clientWidth // 外层包裹的宽度
+      var canmove = elWidth - wrapWidth // 可以移动的距离
+      currleft = $el[0].offsetLeft // 当前向左偏移的距离
+
+
+      if (type === 'left') { // 向左
+          currleft = Math.abs(currleft) + navItemW[handleNum]
+          $el.stop().animate({left: -currleft + 'px'}, 300, function() {
+              handleNum++
+              if (currleft >= canmove) {
+                  handleNum = $el.children("li").length - 1
+                  $el.stop().animate({left: -canmove + 'px',})
+              }
+          })
+      } else { // 向右
+          currleft = currleft + navItemW[handleNum]
+          $el.stop().animate({left: currleft + 'px'}, 300, function() {
+              handleNum--
+              if (currleft >= 0) {
+                  handleNum = 0
+                  $el.stop().animate({left: 0 + 'px'})
+
+              }
+          })
+
+      }
+  }
+  $(".move-l").click(function () {
+      animateTabs("left", $(".nav ul"));
+  });
+  $(".move-r").click(function () {
+      animateTabs("right", $(".nav ul"));
+  });
+</script>
