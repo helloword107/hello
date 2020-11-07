@@ -1,0 +1,156 @@
+<style type="text/css">
+    .main{
+        width: 1000px;
+        height: 500px;
+        background: #fff;
+        overflow-y: auto;
+    }
+    .layui-table{margin: 0;}
+    .layui-form.layui-border-box.layui-table-view{
+        height: 500px;
+        margin: 0;
+    }
+</style>
+<div class="main">
+    <table class="layui-table" id="test"></table>
+</div>
+<script type="text/javascript">
+    ;(function () {
+        function FlowTable (option) {
+            option = option || {}
+            /**基础参数配置**/
+            this.element = option.element;
+            this.parentEl = option.parentEl;
+            this.url = option.url;
+            this.parameter = option.parameter;
+            this.cols = option.cols;
+            this.page = 1;
+            this.totalPage = option.totalPage;
+            this.tableArr = new Array();
+            this.getData();
+        }
+        /**获取数据**/
+        FlowTable.prototype.getData = function () {
+            var that = this;
+            this.parameter.page = this.page;
+            $.ajax({
+                url: this.url,
+                type: "post",
+                page: this.page,
+                data: this.parameter,
+                async: true,
+                success: function (res) {
+                    //var data = res.data ? res.data.content : [];
+                    var data = res.newslist;
+                    for (var i = 0; i < data.length; i ++) {
+                        that.tableArr.push(data[i]);
+                    }
+                    that.render();
+                }
+            });
+        }
+
+        /**渲染表格**/
+        FlowTable.prototype.render = function () {
+            var that = this;
+            var limit = this.tableArr.length;
+            layui.use("table", function () {
+                var table = layui.table;
+                table.render({
+                    elem: that.element,
+                    id: that.element,
+                    data: that.tableArr,
+                    toolbar:false,
+                    loading: true,
+                    page:false,
+                    skin:"line",
+                    limit:limit,
+                    cols: that.cols,
+                    done: function () {
+                        // $(".layui-table-box .layui-table-header").css({
+                        //     "position": "absolute",
+                        //     "top":0,
+                        //     "left":0,
+                        //     "z-index":2
+                        // });
+                        $(".layui-table-box").height($(".layui-form.layui-border-box.layui-table-view").height());
+                        $(".layui-table-box .layui-table-body.layui-table-main").css({
+                            //"top": $(".layui-table-box .layui-table-header").height() + "px",
+                            "height": $(".layui-table-view .layui-table-box").height() - $(".layui-table-box .layui-table-header").height() + "px"
+                        }); 
+                    }
+                });
+            });
+            this.flow();
+        }
+        
+        /**下拉加载**/
+        FlowTable.prototype.flow = function () {
+            var that = this;
+            var oldScrollTop = 0; // 记录上次的位置
+            var nScrollHight = 0; //滚动距离总长
+            var nScrollTop = 0;   //滚动到的当前位置
+            $(this.parentEl).find(".layui-table-body.layui-table-main").scroll(function () {
+                var nDivHight = $(this).height();
+                var paddingBottom = parseInt( $(this).css('padding-bottom') ),paddingTop = parseInt( $(this).css('padding-top') );
+                nScrollTop = $(this)[0].scrollTop;
+                nScrollHight = $(this)[0].scrollHeight;
+                oldScrollTop = nScrollTop;
+                if (nScrollTop + paddingBottom + paddingTop + nDivHight >= nScrollHight) {
+                    that.page ++;
+                    console.log(that.page)
+                    if (that.page > that.totalPage) {
+                        alert("没有更多的数据了");
+                        return false;
+                    } else {
+                        that.parameter.page = that.page;
+                        setTimeout(function () {
+                            $.ajax({
+                                url: that.url,
+                                type: "post",
+                                data: that.parameter,
+                                async: true,
+                                success: function (res) {
+                                    //var data = res.data ? res.data.content : [];
+                                    var data = res.newslist;
+                                    for (var i = 0; i < data.length; i ++) {
+                                        that.tableArr.push(data[i]);
+                                    }
+                                    that.render();
+                                    // 将滚动条拉倒上次记录的位置
+                                    $(".layui-table-body.layui-table-main").scrollTop(nScrollTop);
+                                }
+                            });
+                        }, 200);
+                    }
+                } 
+            });
+        }
+        
+        window.FlowTable = FlowTable;
+    })()
+
+
+    layui.use(['table'], function () {
+        var table = layui.table;
+        
+        var tables = new FlowTable({
+            element: "#test",
+            totalPage: 3,
+            parentEl: ".main",
+            url: "http://api.tianapi.com/txapi/starinfo/index",
+            parameter: {
+                key: "beee68a86d9670702b6f05fa567092f3",
+                num:"20"
+            },
+            cols:[[
+                {checkbox: true, field:"checked"},
+                {field:"name",title:"名称"},
+                {field:"sex",title:"性别",align:"center"},
+                {field:"nationality", title:"国籍", align:"center" },
+                {field:"high", title:"身高", align:"center" },
+                {field:"weight",title:"体重",align:"center", fixed:"right"}
+            ]]
+        });
+    });
+</script>
