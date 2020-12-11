@@ -1,108 +1,149 @@
-// 输入框提示
-// 加载全局鼠标位置
-$(document).mousemove(function (e) {
-    x = e.pageX;
-    y = e.pageY;
-});
-function inputInfoSelect(el) {
-    var data = new Array();
-    var searchArr = new Array(); // 搜索数组
-    var flag = true;
-    var t = $(el).height() + 5;
-    var cls = "input-select-box";
-    var dlCls = "itemBox";
-    var oDiv = "<div class='"+cls+" layui-anim layui-anim-upbit' style='top:"+t+"px;'>";
-        oDiv += "<dl class='"+dlCls+"'></dl><button type='button' class='layui-btn layui-btn-sm layui-btn-primary' style='width:100%;'>新增交易单位</button></div>";
-    var item = "";
-    $.ajax({
-        url: Api.Partner.Read,
-        type: "post",
-        contentType: "application/json",
-        data: JSON.stringify({"pageNo":1,"pageSize":10}),
-        async: false,
-        success: function (res) {
-            console.log("请求到的数据");
-            console.log(res);
-            var _res = res.data ? res.data.content : [];
-            for (var i = 0; i < _res.length; i ++) {
-                data.push(_res[i]);
-                item += "<dd partnerId='"+_res[i].id+"'><input type='hidden' value='"+JSON.stringify(_res[i])+"'/>"+_res[i].name+"</dd>";
+;(function () {
+    // 加载全局鼠标位置
+    $(document).mousemove(function (e) {
+        x = e.pageX;
+        y = e.pageY;
+    });
+    /**
+     * 输入框联想提示插件 2020/11/03
+     * elem: 文本框对象的ID
+     * url: 数据地址
+     * parameter: 请求参数
+     * search: 是否开启搜索 true || false
+     * asyncSearch: 是否开启远程搜索 如果开启远程搜索，则本地搜索自动屏蔽
+     * 调用方式
+     * var input = new InputTips({
+            elem:"#test",
+            url:"http://api.tianapi.com/txapi/starinfo/index",
+            parameter:{
+                key: "beee68a86d9670702b6f05fa567092f3",
+                page:3,
+                num:"10"
+            },
+            search:true,
+            on: function (data) {
+                console.log(data)
             }
-            var domlen = $(el).parent().find(".input-select-box");
-            if (domlen.length > 0) { return false; }
-            $(el).parent().append(oDiv);
-            $("."+dlCls).append(item);
-            bindClick ();
+        });
+     * **/
+    function InputTips (option) {
+        // 基础参数配置
+        option = option || {};
+        this.elem = option.elem;
+        this.url = option.url;
+        this.parameter = option.parameter;
+        this.search = option.search;
+        this.asyncSearch = option.asyncSearch; 
+        this.data = new Array();
+        this.on = "" || option.on.bind();
+        this.cls = "input-tips";
+        this.getData();
+    }
+    // 获取数据
+    InputTips.prototype.getData = function () {
+        var that = this;
+        $.ajax({
+            url: this.url,
+            type:"post",
+            data: this.parameter,
+            async: false,
+            success: function (res) {
+                that.data = res.data ? res.data.content : [];
+                that.creatHtml();
+                that.bindEvents();
+            }
+        })
+    }
+    // 创建html对象
+    InputTips.prototype.creatHtml = function () {
+        var data = this.data;
+        var t = $(this.elem).outerHeight() + 5;
+        var htmlDom = "<div class='"+this.cls+" layui-anim layui-anim-upbit' style='top:"+t+"px;'><dl>";
+        var item = "";
+        for (var i = 0; i < data.length; i ++) {
+            item += "<dd>"+data[i].name+"</dd>";
         }
-    });
-    // 搜索事件
-    $(el).on("compositionstart", function () {
-        flag = false; // 英文或数字状态下
-    });
-    $(el).on("compositionend", function() {
-        flag = true; // 中文状态下
-    });
-    $(el).on("input", function () {
-        var searchList = "";
-        setTimeout(function () {
-            console.log(data);
-            if (true) {
-                console.log($(el).val());
-                var keyWord = $(el).val();
-                for (var i = 0; i < data.length; i ++) {
-                    if (data[i].name.search(keyWord) != -1) {
-                        searchArr.push(data[i]);
+        htmlDom += item+"</dl></div>";
+        if ($(this.elem).parent().find($("."+this.cls).length <= 0)) {
+            $(this.elem).parent().append(htmlDom)
+        }
+    }
+    // 绑定事件
+    InputTips.prototype.bindEvents = function () {
+        this.selectData = "";
+        var that = this;
+        var cls = this.cls;
+        var flag = true;
+        var originalData = this.data;
+        $(this.elem).on("focus", function () {
+            $("."+cls).show();
+        });
+        $(this.elem).on("blur", function () {
+            var y1 = $("."+cls).offset().top;  //div上面两个的点的y值
+            var y2 = y1 + $("."+cls).height();//div下面两个点的y值
+            var x1 = $("."+cls).offset().left;  //div左边两个的点的x值
+            var x2 = x1 + $("."+cls).width();  //div右边两个点的x的值
+            if (x < x1 || x > x2 || y < y1 || y > y2) {
+                $("."+cls).hide();
+            }
+        });
+        // 点击其他区域关闭
+        $(document).mouseup(function (e) {
+            var userSet_con = $(''+that.elem+',.'+cls+'');
+            if (!userSet_con.is(e.target) && userSet_con.has(e.target).length === 0) {
+                $("."+cls).hide();
+            }
+        });
+        // 搜索，本地搜索
+        if (this.search == true) {
+            search();
+        }
+        function search () {
+            console.log("开启搜索");
+            var el = that.elem;
+            $(el).on("compositionstart", function () {
+                flag = false; // 英文或数字状态
+            });
+            $(el).on("compositionend", function () {
+                flag = true; // 中文状态
+            });
+            $(el).on("input", function () {
+                var searchItem = "";
+                setTimeout(function () {
+                    if (flag == true) {
+                        var searchArr = new Array();
+                        var keyWorld = $(el).val();
+                        for (var i = 0; i < originalData.length; i ++) {
+                            console.log(originalData[i].name.search(keyWorld))
+                            if (originalData[i].name.search(keyWorld) != -1) {
+                                searchArr.push(originalData[i]);
+                            }
+                        }
+                        if (searchArr.length != 0) {
+                            for (var i = 0; i < searchArr.length; i ++) {
+                                searchItem += "<dd>"+searchArr[i].name+"</dd>";
+                            }
+                            $("."+cls).find("dl").html("");
+                            $("."+cls).find("dl").append(searchItem);
+                        } else {
+                            $("."+cls).find("dl").html("");
+                            $("."+cls).find("dl").append("<p>没有找到想要的数据</p>");
+                        }
                     }
+                },10);
+            });
+        }
+        $("."+cls).on("click","dd",function () {
+            var val = $(this).text();
+            for (var i = 0; i < that.data.length; i ++) {
+                if (that.data[i].name === val) {
+                    that.selectData = that.data[i];
                 }
-                for (var j = 0; j < searchArr.length; j ++) {
-                    searchList += "<dd  partnerId='"+searchArr[j].id+"'><input type='hidden' value='"+JSON.stringify(searchArr[j])+"'/>"+searchArr[j].name+"</dd>";
-                }
-                $("."+dlCls).html("");
-                $("."+dlCls).append(searchList);
-                // 绑定事件
-                bindClick ();
-                searchArr = [];
-                console.log(searchArr);
             }
-        },1)
-    });
-
-    $(el).focus(function () {
-        $("."+cls).show();
-    });
-    $(el).blur(function () {
-        var y1 = $("."+cls).offset().top;  //div上面两个的点的y值
-        var y2 = y1 + $("."+cls).height();//div下面两个点的y值
-        var x1 = $("."+cls).offset().left;  //div左边两个的点的x值
-        var x2 = x1 + $("."+cls).width();  //div右边两个点的x的值
-        if (x < x1 || x > x2 || y < y1 || y > y2) {
+            $(that.elem).val($(this).text());
             $("."+cls).hide();
-            $("."+dlCls).html("");
-            $("."+dlCls).append(item);
-            // 绑定事件
-            bindClick ();
-        }
-    });
-    // 点击其他区域关闭
-    $(document).mouseup(function (e) {
-        var userSet_con = $(''+el+',.'+cls+'');
-        if (!userSet_con.is(e.target) && userSet_con.has(e.target).length === 0) {
-            $("."+cls).hide();
-            $("."+dlCls).html("");
-            $("."+dlCls).append(item);
-            // 绑定事件
-            bindClick ();
-        }
-    });
-
-    // 事件绑定
-    function bindClick () {
-        $("."+cls).find("dd").on("click", function () {
-            var _id = $(this).attr("partnerId");
-            $(el).val($(this).text());
-            $(el).attr("company-id",_id);
-            $("."+cls).hide();
+            that.on(that.selectData);
         });
     }
-}
-inputInfoSelect("input[name='inputSecect']");
+    window.InputTips = InputTips;
+})()
