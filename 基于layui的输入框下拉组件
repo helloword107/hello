@@ -1,0 +1,158 @@
+<!--css begin-->
+.tipsBox{
+        width: 100%;
+        background: #fff;
+        border: 1px solid #d2d2d2;
+        background-color: #fff;
+        border-radius: 2px;
+        box-shadow: 0 2px 4px rgba(0,0,0,.12);
+        box-sizing: border-box;
+        position: absolute;
+        left: 0;
+    }
+    .tipsBox dl{
+        padding: 5px 0;
+        min-width: 100%;
+        max-height: 300px;
+        overflow-y: auto;
+    }
+    .tipsBox dd{
+        padding: 0 10px;
+        line-height: 36px;
+        cursor: pointer;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .tipsBox dd:hover,
+    .tipsBox dd.lay-this{
+        background-color: #5FB878;
+        color: #fff;
+    }
+    .tipsBox .tipsBtnBox{
+        width:100%;
+        padding:8px 10px;
+        box-sizing: border-box;
+        border-top: 1px dashed #d2d2d2;
+    }
+    .tipsBox .tipsBtnBox .layui-btn{
+        width:100%;
+    }
+<!--css end-->
+layui.define(["jquery","layer"],function(exports){
+    var $ = layui.$,
+        layer = layui.layer;
+    // 加载全局鼠标位置
+    $(document).mousemove(function (e) {
+        x = e.pageX;
+        y = e.pageY;
+    });
+    var inputTips = {
+        render:function(opt){
+            opt = opt || {};
+            this.elem = opt.elem;
+            this.url = opt.url;
+            this.data = opt.data;
+            this.btn = opt.btn;
+            this.on = opt.on || function () {};
+            this.btnClick = opt.btnClick || function () {};
+            this.getData = "";
+            this.cls = "tipsBox";
+            this.btnId = "customize";
+            var that = this;
+            $.ajax({
+                url:this.url,
+                type:"POST",
+                data:this.data,
+                success:function(res){
+                    that.getData = res.newslist;
+                    console.log(that.getData)
+                    that.init(opt);
+                }
+            });
+        },
+        init:function(opt){
+            var that = this;
+            var t = $(this.elem).height() + 5;
+            var htmlDom = "<div class='"+this.cls+" layui-hide' style='top:"+t+"px'><dl>";
+            $.each(this.getData,function(i,item){
+                htmlDom += "<dd lay-id='"+item.name+"'>"+item.name+"</dd>";
+            });
+            htmlDom += "</dl>";
+            if (this.btn != undefined) {
+                htmlDom += "<div class='tipsBtnBox'><button type='button' lay-id='"+this.btnId+"' class='layui-btn'>"+this.btn+"</button></div>";
+            }
+            htmlDom += "</div>";
+            if ($(this.elem).parent().find(".tipsBox").length <= 0) {
+                $(this.elem).parent().append(htmlDom);
+            }
+            $(this.elem).parent().on("click",".tipsBox dd",function(){
+                var checkId = $(this).attr("lay-id");
+                var checkData = "";
+                $(this).addClass("lay-this").siblings().removeClass("lay-this");
+                $.each(that.getData,function(i,item){
+                    if (checkId == item.name) {
+                        checkData = item;
+                    }
+                });
+                if (typeof that.on === "function") {
+                    that.on(checkData);
+                }
+            });
+            $(this.elem).parent().on("click",".tipsBox .layui-btn",function(){
+                if (typeof that.btnClick === "function") {
+                    that.btnClick();
+                }
+            });
+            this.events(opt);
+        },
+        events:function(opt){
+            var that = this;
+            var flag = true;
+            $(this.elem).focus(function(){
+                $(this).parent().find($("."+that.cls).removeClass("layui-hide"));
+            });
+            $(this.elem).blur(function(){
+                //$(this).parent().find($("."+that.cls).addClass("layui-hide"));
+                var y1 = $("."+that.cls).offset().top;  //div上面两个的点的y值
+                var y2 = y1 + $("."+that.cls).height();//div下面两个点的y值
+                var x1 = $("."+that.cls).offset().left;  //div左边两个的点的x值
+                var x2 = x1 + $("."+that.cls).width();  //div右边两个点的x的值
+                if (x < x1 || x > x2 || y < y1 || y > y2) {
+                    $(this).parent().find($("."+that.cls).addClass("layui-hide"));
+                }
+            });
+             // 点击其他区域关闭
+            $(document).mouseup(function (e) {
+                var userSet_con = $(''+that.elem+',.'+that.cls+'');
+                if (!userSet_con.is(e.target) && userSet_con.has(e.target).length === 0) {
+                    $(that.elem).parent().find($("."+that.cls).addClass("layui-hide"));
+                }
+            });
+        }
+    }
+    // 输出外部接口
+    exports("inputTips", inputTips);
+});
+
+// 调用方式
+layui.use(["inputTips","layer"], function(){
+    let inputTips = layui.inputTips,
+        layer = layui.layer;
+    inputTips.render({
+        elem:"#test",
+        url:"http://api.tianapi.com/txapi/starinfo/index",
+        btn:"新增交易单位",
+        data:{
+            key:"beee68a86d9670702b6f05fa567092f3",
+            page: 1,
+            num: "5"
+        },
+        on:function(data){
+           //layer.msg(JSON.stringify(data))
+        },
+        btnClick:function(){
+            layer.msg("我是自定义按钮点击事件");
+        }
+    });
+});
