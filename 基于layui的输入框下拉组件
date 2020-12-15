@@ -1,44 +1,65 @@
 <!--css begin-->
 .tipsBox{
-        width: 100%;
-        background: #fff;
-        border: 1px solid #d2d2d2;
-        background-color: #fff;
-        border-radius: 2px;
-        box-shadow: 0 2px 4px rgba(0,0,0,.12);
-        box-sizing: border-box;
-        position: absolute;
-        left: 0;
-    }
-    .tipsBox dl{
-        padding: 5px 0;
-        min-width: 100%;
-        max-height: 300px;
-        overflow-y: auto;
-    }
-    .tipsBox dd{
-        padding: 0 10px;
-        line-height: 36px;
-        cursor: pointer;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-    .tipsBox dd:hover,
-    .tipsBox dd.lay-this{
-        background-color: #5FB878;
-        color: #fff;
-    }
-    .tipsBox .tipsBtnBox{
-        width:100%;
-        padding:8px 10px;
-        box-sizing: border-box;
-        border-top: 1px dashed #d2d2d2;
-    }
-    .tipsBox .tipsBtnBox .layui-btn{
-        width:100%;
-    }
+    width: 100%;
+    background: #fff;
+    border: 1px solid #d2d2d2;
+    background-color: #fff;
+    border-radius: 2px;
+    box-shadow: 0 2px 4px rgba(0,0,0,.12);
+    box-sizing: border-box;
+    position: absolute;
+    left: 0;
+}
+.tipsBox .tipsBox-title{
+    padding: 10px 10px;
+    overflow: hidden;
+    border-bottom: 1px dashed #d2d2d2;
+}
+.tipsBox .tipsBox-title h2{
+    display: inline-block;
+    float: left;
+    font-size: 14px;
+    font-weight: bold;
+    line-height: 20px;
+}
+.tipsBox .tipsBox-title .pageBox{
+    display: inline-block;
+    float: right;
+}
+.tipsBox .tipsBox-title .pageBox i.layui-icon{font-size: 14px;line-height: 22px;cursor: pointer;}
+
+.tipsBox dl{
+    padding: 5px 0;
+    min-width: 100%;
+    max-height: 300px;
+    overflow-y: auto;
+}
+.tipsBox dd{
+    padding: 0 10px;
+    line-height: 36px;
+    cursor: pointer;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.tipsBox dd:hover,
+.tipsBox dd.lay-this{
+    background-color: #5FB878;
+    color: #fff;
+}
+.tipsBox .tipsBtnBox{
+    width:100%;
+    padding:8px 10px;
+    box-sizing: border-box;
+    border-top: 1px dashed #d2d2d2;
+}
+.tipsBox .tipsBtnBox .layui-btn{
+    width:100%;
+}
 <!--css end-->
+/**
+ * 输入框联想选择插件
+ * **/
 layui.define(["jquery","layer"],function(exports){
     var $ = layui.$,
         layer = layui.layer;
@@ -53,10 +74,14 @@ layui.define(["jquery","layer"],function(exports){
             this.elem = opt.elem;
             this.url = opt.url;
             this.data = opt.data;
+            this.title = opt.title;
             this.btn = opt.btn;
+            this.pageNo = 1;
+            this.pageSize = 10;
             this.on = opt.on || function () {};
             this.btnClick = opt.btnClick || function () {};
             this.getData = "";
+            this.listDom = "";
             this.cls = "tipsBox";
             this.btnId = "customize";
             var that = this;
@@ -74,10 +99,18 @@ layui.define(["jquery","layer"],function(exports){
         init:function(opt){
             var that = this;
             var t = $(this.elem).height() + 5;
-            var htmlDom = "<div class='"+this.cls+" layui-hide' style='top:"+t+"px'><dl>";
+            var htmlDom = "<div class='"+this.cls+"' style='top:"+t+"px'>";
+            //var listDom = "";
+            if (this.title != undefined) {
+                htmlDom += "<div class='tipsBox-title'><h2>"+this.title+"</h2><div class='pageBox'><i class='layui-icon layui-icon-prev'></i><span>"+this.pageNo+"/"+this.pageSize+"</span><i class='layui-icon layui-icon-next'></i></div></div>";
+            }else{
+                htmlDom += "<div class='tipsBox-title'><div class='pageBox'><i class='layui-icon layui-icon-prev'></i><span>"+this.pageNo+"/"+this.pageSize+"</span><i class='layui-icon layui-icon-next'></i></div></div>";
+            }
+            htmlDom += "<dl>";
             $.each(this.getData,function(i,item){
-                htmlDom += "<dd lay-id='"+item.name+"'>"+item.name+"</dd>";
+                that.listDom += "<dd lay-id='"+item.name+"'>"+item.name+"</dd>";
             });
+            htmlDom += this.listDom;
             htmlDom += "</dl>";
             if (this.btn != undefined) {
                 htmlDom += "<div class='tipsBtnBox'><button type='button' lay-id='"+this.btnId+"' class='layui-btn'>"+this.btn+"</button></div>";
@@ -129,6 +162,40 @@ layui.define(["jquery","layer"],function(exports){
                     $(that.elem).parent().find($("."+that.cls).addClass("layui-hide"));
                 }
             });
+            // 搜索
+            $(this.elem).on("compositionstart",function () {
+                flag = false; // 英文或数字状态下不搜索
+            });
+            $(this.elem).on("compositionend",function () {
+                flag = true; // 中文状态
+            });
+            $(this.elem).on("input",function () {
+                var keyWorld = $(this).val();
+                var str = keyWorld.replace(/(^\s*)|(\s*$)/g, '');//去除空格;
+                console.log(str);
+                var searchListDom = "";
+                setTimeout(function(){
+                    if (flag && keyWorld != "") {
+                        console.log(keyWorld);
+                        var searchArr = new Array();
+                        $.each(that.getData,function (i,item) {
+                            var search = item.name.search(keyWorld);
+                            if (search != -1) {
+                                searchArr.push(item);
+                            }
+                        });
+                        if (searchArr.length != 0) {
+                            $.each(searchArr,function (i,item){
+                                searchListDom += "<dd>"+item.name+"</dd>";
+                            })
+                            $(that.elem).parent().find("."+that.cls).find("dl").html(searchListDom)
+                        } else {
+                            var noDom = "<dt style='text-align:center;color:#d2d2d2;'><i class='layui-icon layui-icon-tips' style='font-size:25px;'></i><p style='text-align:center'>没有找到相关数据</p></dt>";
+                            $(that.elem).parent().find("."+that.cls).find("dl").html(noDom)
+                        }
+                    }
+                },10);
+            });
         }
     }
     // 输出外部接口
@@ -137,22 +204,23 @@ layui.define(["jquery","layer"],function(exports){
 
 // 调用方式
 layui.use(["inputTips","layer"], function(){
-    let inputTips = layui.inputTips,
-        layer = layui.layer;
-    inputTips.render({
-        elem:"#test",
-        url:"http://api.tianapi.com/txapi/starinfo/index",
-        btn:"新增交易单位",
-        data:{
-            key:"beee68a86d9670702b6f05fa567092f3",
-            page: 1,
-            num: "5"
-        },
-        on:function(data){
-           //layer.msg(JSON.stringify(data))
-        },
-        btnClick:function(){
-            layer.msg("我是自定义按钮点击事件");
-        }
+        let inputTips = layui.inputTips,
+            layer = layui.layer;
+        inputTips.render({
+            elem:"#test",
+            //title:"交易单位列表",
+            url:"http://api.tianapi.com/txapi/starinfo/index",
+            btn:"新增交易单位",
+            data:{
+                key:"beee68a86d9670702b6f05fa567092f3",
+                page: 1,
+                num: "5"
+            },
+            on:function(data){
+                layer.msg(JSON.stringify(data))
+            },
+            btnClick:function(){
+                layer.msg("我是自定义按钮点击事件");
+            }
+        });
     });
-});
