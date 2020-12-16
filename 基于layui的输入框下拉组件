@@ -60,6 +60,9 @@
 /**
  * 输入框联想选择插件
  * **/
+/**
+ * 输入框联想选择插件
+ * **/
 layui.define(["jquery","layer"],function(exports){
     var $ = layui.$,
         layer = layui.layer;
@@ -96,21 +99,55 @@ layui.define(["jquery","layer"],function(exports){
                 }
             });
         },
+        renderList:function(data){
+            var listDom = "";
+            $.each(data,function(i,item){
+                listDom += "<dd lay-id='"+item.name+"'>"+item.name+"</dd>";
+            });
+            return listDom;
+        },
+        close:function(opt){
+            var data = this.getData;
+            $(this.elem).parent().find("."+this.cls).addClass("layui-hide");
+            $(this.elem).parent().find("."+this.cls).find("dl").html(this.renderList(data));
+        },
+        backFun:function(opt,data){
+            var that = this;
+            // 列表点击回调
+            $(this.elem).parent().on("click",".tipsBox dd",function(){
+                var checkId = $(this).attr("lay-id");
+                var checkVal = $(this).text();
+                var checkData = "";
+                $(that.elem).val(checkVal);
+                $.each(data,function(i,item){
+                    if (checkId == item.name) {
+                        checkData = item;
+                    }
+                });
+                if (typeof that.on === "function") {
+                    that.on(checkData);
+                }
+                that.close(opt);
+            });
+            // 自定义按钮点击回调
+            $(this.elem).parent().on("click",".tipsBox .layui-btn",function(){
+                if (typeof that.btnClick === "function") {
+                    that.btnClick();
+                }
+            });
+        },
         init:function(opt){
             var that = this;
             var t = $(this.elem).height() + 5;
-            var htmlDom = "<div class='"+this.cls+"' style='top:"+t+"px'>";
-            //var listDom = "";
+            var htmlDom = "<div class='"+this.cls+" layui-hide' style='top:"+t+"px'>";
             if (this.title != undefined) {
                 htmlDom += "<div class='tipsBox-title'><h2>"+this.title+"</h2><div class='pageBox'><i class='layui-icon layui-icon-prev'></i><span>"+this.pageNo+"/"+this.pageSize+"</span><i class='layui-icon layui-icon-next'></i></div></div>";
             }else{
                 htmlDom += "<div class='tipsBox-title'><div class='pageBox'><i class='layui-icon layui-icon-prev'></i><span>"+this.pageNo+"/"+this.pageSize+"</span><i class='layui-icon layui-icon-next'></i></div></div>";
             }
             htmlDom += "<dl>";
-            $.each(this.getData,function(i,item){
-                that.listDom += "<dd lay-id='"+item.name+"'>"+item.name+"</dd>";
-            });
-            htmlDom += this.listDom;
+            htmlDom += this.renderList(this.getData);
+            //console.log(this.renderList(this.getData));
             htmlDom += "</dl>";
             if (this.btn != undefined) {
                 htmlDom += "<div class='tipsBtnBox'><button type='button' lay-id='"+this.btnId+"' class='layui-btn'>"+this.btn+"</button></div>";
@@ -119,31 +156,18 @@ layui.define(["jquery","layer"],function(exports){
             if ($(this.elem).parent().find(".tipsBox").length <= 0) {
                 $(this.elem).parent().append(htmlDom);
             }
-            $(this.elem).parent().on("click",".tipsBox dd",function(){
-                var checkId = $(this).attr("lay-id");
-                var checkData = "";
-                $(this).addClass("lay-this").siblings().removeClass("lay-this");
-                $.each(that.getData,function(i,item){
-                    if (checkId == item.name) {
-                        checkData = item;
-                    }
-                });
-                if (typeof that.on === "function") {
-                    that.on(checkData);
-                }
-            });
-            $(this.elem).parent().on("click",".tipsBox .layui-btn",function(){
-                if (typeof that.btnClick === "function") {
-                    that.btnClick();
-                }
-            });
-            this.events(opt);
+            
+            this.backFun(opt,this.getData);
+            this.events(opt,this.getData);
         },
-        events:function(opt){
+        events:function(opt,data){
             var that = this;
+            var data = this.getData;
+            var option = opt;
             var flag = true;
             $(this.elem).focus(function(){
                 $(this).parent().find($("."+that.cls).removeClass("layui-hide"));
+                //that.close(opt);
             });
             $(this.elem).blur(function(){
                 //$(this).parent().find($("."+that.cls).addClass("layui-hide"));
@@ -152,14 +176,19 @@ layui.define(["jquery","layer"],function(exports){
                 var x1 = $("."+that.cls).offset().left;  //div左边两个的点的x值
                 var x2 = x1 + $("."+that.cls).width();  //div右边两个点的x的值
                 if (x < x1 || x > x2 || y < y1 || y > y2) {
-                    $(this).parent().find($("."+that.cls).addClass("layui-hide"));
+                    that.close(opt);
+                    // $(this).parent().find($("."+that.cls).addClass("layui-hide"));
+                    // that.renderDom(opt);
+                    //$(this).parent().find("."+that.cls).find("dl").html(that.renderList(data));
                 }
             });
              // 点击其他区域关闭
             $(document).mouseup(function (e) {
                 var userSet_con = $(''+that.elem+',.'+that.cls+'');
                 if (!userSet_con.is(e.target) && userSet_con.has(e.target).length === 0) {
-                    $(that.elem).parent().find($("."+that.cls).addClass("layui-hide"));
+                    that.close(opt);
+                    //$(that.elem).parent().find($("."+that.cls).addClass("layui-hide"));
+                    //$(this).parent().find("."+that.cls).find("dl").html(that.renderList(data));
                 }
             });
             // 搜索
@@ -172,7 +201,7 @@ layui.define(["jquery","layer"],function(exports){
             $(this.elem).on("input",function () {
                 var keyWorld = $(this).val();
                 var str = keyWorld.replace(/(^\s*)|(\s*$)/g, '');//去除空格;
-                console.log(str);
+                //console.log(str);
                 var searchListDom = "";
                 setTimeout(function(){
                     if (flag && keyWorld != "") {
@@ -185,11 +214,13 @@ layui.define(["jquery","layer"],function(exports){
                             }
                         });
                         if (searchArr.length != 0) {
-                            $.each(searchArr,function (i,item){
-                                searchListDom += "<dd>"+item.name+"</dd>";
-                            })
-                            $(that.elem).parent().find("."+that.cls).find("dl").html(searchListDom)
+                            $(that.elem).parent().find("."+that.cls).find("dl").html(that.renderList(searchArr));
                         } else {
+                            // $.ajax({
+                            //     url:that.url,
+                            //     type:"POST",
+                            //     data:
+                            // });
                             var noDom = "<dt style='text-align:center;color:#d2d2d2;'><i class='layui-icon layui-icon-tips' style='font-size:25px;'></i><p style='text-align:center'>没有找到相关数据</p></dt>";
                             $(that.elem).parent().find("."+that.cls).find("dl").html(noDom)
                         }
@@ -201,7 +232,6 @@ layui.define(["jquery","layer"],function(exports){
     // 输出外部接口
     exports("inputTips", inputTips);
 });
-
 // 调用方式
 layui.use(["inputTips","layer"], function(){
         let inputTips = layui.inputTips,
